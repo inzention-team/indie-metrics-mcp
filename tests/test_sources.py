@@ -46,7 +46,7 @@ def test_downloads_counts_first_downloads_only_and_compares_windows():
     out = sources.downloads(None, 7, http, TODAY)
     assert out["this_window"]["downloads"] == 8      # 3 + 5; the subscription row (IAY) is not a download
     assert out["previous_window"]["downloads"] == 8
-    assert out["change"] == 0
+    assert out["change"] is None and "Withheld" in out["change_note"]
     assert len(out["this_window"]["days_without_report"]) == 6
     assert len(http.calls) == 14
 
@@ -152,3 +152,9 @@ def test_keychain_fallback(monkeypatch):
     monkeypatch.setattr(keys.subprocess, "run", lambda cmd, **kw: (setattr(R, "cmd", cmd), R)[1])
     assert keys.get("POSTHOG_API_KEY") == "from-keychain"
     assert R.cmd[3] == "indie-metrics.POSTHOG_API_KEY"
+
+
+def test_downloads_change_given_when_all_days_reported():
+    every = {(TODAY - dt.timedelta(days=i)).isoformat() for i in range(1, 15)}
+    out = sources.downloads(None, 7, asc_http(every), TODAY)
+    assert out["change"] == 0 and "change_note" not in out

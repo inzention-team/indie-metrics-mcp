@@ -14,7 +14,7 @@ Shipping an app and want the checklist? The [App Store launch kit](https://www.i
 | `subscribers(project, days)` | Active subscriptions, trials, MRR and 28-day revenue now; active subscriptions at the end of each window |
 | `events(project, names?, days)` | PostHog event counts, same two windows (HogQL) |
 
-`days` is 1 to 30. Windows are whole days ending yesterday (UTC). Apple posts a day's report the next day, so a missing day is listed under `days_without_report`.
+`days` is 1 to 30. Windows are whole days ending yesterday. Apple's report days are Pacific time; PostHog days are UTC. Apple posts a day's report the next day, so a missing day is listed under `days_without_report`.
 
 ## Set up
 

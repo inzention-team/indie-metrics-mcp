@@ -29,13 +29,21 @@ class NoData(Exception):
     """The API answered 404: no report for that day."""
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None  # a redirect would carry the Authorization header to another host
+
+
+_opener = urllib.request.build_opener(_NoRedirect)
+
+
 def default_http(method, url, headers=None, body=None, timeout=60):
     """(status, bytes). HTTPS only."""
     if not url.startswith("https://"):
         raise ValueError("only https URLs are allowed")
     req = urllib.request.Request(url, data=body, method=method, headers=headers or {})
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with _opener.open(req, timeout=timeout) as resp:
             return resp.status, resp.read()
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read()
@@ -77,11 +85,11 @@ def asc_token(now=None):
     )
 
 
-def asc_sales_day(day, http=default_http, token=None):
+def asc_sales_day(day, http=default_http, token=None, vendor=None):
     """Rows of the DAILY SALES SUMMARY report for one day. Raises NoData on 404."""
     q = urllib.parse.urlencode({
         "filter[frequency]": "DAILY", "filter[reportType]": "SALES", "filter[reportSubType]": "SUMMARY",
-        "filter[vendorNumber]": keys.get("ASC_VENDOR_NUMBER"), "filter[reportDate]": day.isoformat(),
+        "filter[vendorNumber]": vendor or keys.get("ASC_VENDOR_NUMBER"), "filter[reportDate]": day.isoformat(),
     })
     status, raw = http("GET", f"{ASC_BASE}/v1/salesReports?{q}",
                        {"Authorization": f"Bearer {token or asc_token()}", "Accept": "application/a-gzip"})
@@ -101,11 +109,11 @@ def _matches(row, app):
     return any(needle in (row.get(f) or "").lower() for f in ("Title", "SKU", "Apple Identifier"))
 
 
-def _collect(a, b, app, http, token):
+def _collect(a, b, app, http, token, vendor):
     rows, missing = [], []
     for day in _day_list(a, b):
         try:
-            rows += [r for r in asc_sales_day(day, http, token) if _matches(r, app)]
+            rows += [r for r in asc_sales_day(day, http, token, vendor) if _matches(r, app)]
         except NoData:
             missing.append(day.isoformat())
     return rows, missing
@@ -121,24 +129,28 @@ def _num(s):
 def downloads(app=None, days=7, http=default_http, today=None):
     check_days(days)
     ts, te, ps, pe = windows(days, today)
-    token = asc_token()
+    token, vendor = asc_token(), keys.get("ASC_VENDOR_NUMBER")
     out = {"source": "App Store Connect Sales and Trends", "app_filter": app, "days": days, "unit": "first-time downloads"}
     for label, (a, b) in (("this_window", (ts, te)), ("previous_window", (ps, pe))):
-        rows, missing = _collect(a, b, app, http, token)
+        rows, missing = _collect(a, b, app, http, token, vendor)
         total = sum(_num(r.get("Units")) for r in rows if (r.get("Product Type Identifier") or "").strip() in FIRST_DOWNLOAD_TYPES)
         out[label] = {**_span(a, b), "downloads": int(total), "days_without_report": missing}
-    out["change"] = out["this_window"]["downloads"] - out["previous_window"]["downloads"]
+    incomplete = out["this_window"]["days_without_report"] or out["previous_window"]["days_without_report"]
+    out["change"] = None if incomplete else out["this_window"]["downloads"] - out["previous_window"]["downloads"]
+    if incomplete:
+        out["change_note"] = "Withheld: a window has days without an Apple report (often yesterday, not posted yet). Do not compare the totals."
     return out
 
 
 def proceeds(app=None, days=7, http=default_http, today=None):
     check_days(days)
     ts, te, ps, pe = windows(days, today)
-    token = asc_token()
+    token, vendor = asc_token(), keys.get("ASC_VENDOR_NUMBER")
     out = {"source": "App Store Connect Sales and Trends", "app_filter": app, "days": days,
-           "unit": "developer proceeds by currency, as Apple reports them (units x proceeds per unit)"}
+           "unit": "developer proceeds by currency, as Apple reports them (units x proceeds per unit)",
+           "note": "Compare windows only when days_without_report is empty in both."}
     for label, (a, b) in (("this_window", (ts, te)), ("previous_window", (ps, pe))):
-        rows, missing = _collect(a, b, app, http, token)
+        rows, missing = _collect(a, b, app, http, token, vendor)
         by_cur = {}
         for r in rows:
             cur = (r.get("Currency of Proceeds") or "").strip() or "unknown"
@@ -214,9 +226,9 @@ def events(project, names=None, days=7, http=default_http, today=None):
     # Dates are our own isoformat strings, never user text.
     query = (
         "SELECT event, "
-        f"countIf(toDate(timestamp) >= toDate('{ts}') AND toDate(timestamp) <= toDate('{te}')) AS this_window, "
-        f"countIf(toDate(timestamp) >= toDate('{ps}') AND toDate(timestamp) <= toDate('{pe}')) AS previous_window "
-        f"FROM events WHERE toDate(timestamp) >= toDate('{ps}') AND toDate(timestamp) <= toDate('{te}'){where} "
+        f"countIf(toDate(toTimeZone(timestamp, 'UTC')) >= toDate('{ts}') AND toDate(toTimeZone(timestamp, 'UTC')) <= toDate('{te}')) AS this_window, "
+        f"countIf(toDate(toTimeZone(timestamp, 'UTC')) >= toDate('{ps}') AND toDate(toTimeZone(timestamp, 'UTC')) <= toDate('{pe}')) AS previous_window "
+        f"FROM events WHERE toDate(toTimeZone(timestamp, 'UTC')) >= toDate('{ps}') AND toDate(toTimeZone(timestamp, 'UTC')) <= toDate('{te}'){where} "
         "GROUP BY event ORDER BY this_window DESC LIMIT 50"
     )
     status, raw = http("POST", f"{host}/api/projects/{project}/query/",
