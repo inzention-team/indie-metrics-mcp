@@ -1,0 +1,4 @@
+{"category": "actives", "object": "chart_data", "resolution": "day", "values": [
+ {"cohort": 1792454400, "measure": 0, "value": 24, "incomplete": false},
+ {"cohort": 1793059200, "measure": 0, "value": 31, "incomplete": false},
+ {"cohort": 1793059200, "measure": 1, "value": 99, "incomplete": false}]}

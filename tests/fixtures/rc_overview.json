@@ -1,0 +1,6 @@
+{"currency": "USD", "object": "overview_metrics", "metrics": [
+ {"id": "active_trials", "value": 4, "unit": "#"},
+ {"id": "active_subscriptions", "value": 31, "unit": "#"},
+ {"id": "mrr", "value": 142.5, "unit": "$"},
+ {"id": "revenue", "value": 160.0, "unit": "$"},
+ {"id": "new_customers", "value": 58, "unit": "#"}]}
