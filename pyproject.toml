@@ -4,11 +4,24 @@ version = "0.1.0"
 description = "Read-only MCP server: App Store Connect, RevenueCat and PostHog numbers for your own apps, asked in Claude."
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Inzention" }]
+keywords = ["mcp", "mcp-server", "app-store-connect", "revenuecat", "posthog"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+]
 requires-python = ">=3.10"
 dependencies = ["mcp>=2.3", "pyjwt>=2.8", "cryptography>=42"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/inzention-team/indie-metrics-mcp"
+Repository = "https://github.com/inzention-team/indie-metrics-mcp"
+Issues = "https://github.com/inzention-team/indie-metrics-mcp/issues"
 
 [project.scripts]
 indie-metrics-mcp = "indie_metrics_mcp.server:main"
