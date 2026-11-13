@@ -16,7 +16,17 @@ Shipping an app and want the checklist? The [App Store launch kit](https://www.i
 
 `days` is 1 to 30. Windows are whole days ending yesterday. Apple's report days are Pacific time; PostHog days are UTC. Apple posts a day's report the next day, so a missing day is listed under `days_without_report`.
 
-## Set up
+## Install
+
+From the first release (not on PyPI yet), one line, no clone:
+
+```
+claude mcp add indie-metrics -- uvx indie-metrics-mcp
+```
+
+This needs [uv](https://docs.astral.sh/uv/). Get your keys as in steps 4 to 6 below. Pass them with `-e NAME=value` on `claude mcp add`, or use the Keychain items from step 7. The clone steps below work today and stay as the second route.
+
+## Set up (from a clone)
 
 1. Install Python 3.10 or newer.
 2. `git clone` this repository and `cd` into it.
@@ -45,3 +55,5 @@ You only need the keys for the sources you use. A tool without its key says whic
 ## Licence
 
 MIT. Dependency licences: [LICENCES.md](LICENCES.md).
+
+<!-- mcp-name: io.github.inzention-team/indie-metrics-mcp -->

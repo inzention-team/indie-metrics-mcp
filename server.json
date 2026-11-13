@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.inzention-team/indie-metrics-mcp",
+  "description": "Read-only: your App Store Connect, RevenueCat and PostHog numbers in Claude, week on week.",
+  "repository": { "url": "https://github.com/inzention-team/indie-metrics-mcp", "source": "github" },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "indie-metrics-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "ASC_KEY_ID", "description": "App Store Connect key id" },
+        { "name": "ASC_ISSUER_ID", "description": "App Store Connect issuer id" },
+        { "name": "ASC_KEY_PATH", "description": "Path to the .p8 key file" },
+        { "name": "ASC_VENDOR_NUMBER", "description": "App Store Connect vendor number" },
+        { "name": "REVENUECAT_API_KEY", "description": "RevenueCat v2 secret key, read-only", "isSecret": true },
+        { "name": "POSTHOG_API_KEY", "description": "PostHog personal API key, read access to query", "isSecret": true },
+        { "name": "POSTHOG_HOST", "description": "Optional. Default https://us.posthog.com; https://eu.posthog.com for the EU cloud" }
+      ]
+    }
+  ]
+}
