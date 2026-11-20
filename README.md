@@ -18,13 +18,13 @@ Shipping an app and want the checklist? The [App Store launch kit](https://www.i
 
 ## Install
 
-From the first release (not on PyPI yet), one line, no clone:
+One line, no clone. The package is on [PyPI](https://pypi.org/project/indie-metrics-mcp/) and in the [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=indie-metrics-mcp) as `io.github.inzention-team/indie-metrics-mcp`:
 
 ```
 claude mcp add indie-metrics -- uvx indie-metrics-mcp
 ```
 
-This needs [uv](https://docs.astral.sh/uv/). Get your keys as in steps 4 to 6 below. Pass them with `-e NAME=value` on `claude mcp add`, or use the Keychain items from step 7. The clone steps below work today and stay as the second route.
+This needs [uv](https://docs.astral.sh/uv/). Get your keys as in steps 4 to 6 below. Pass them with `-e NAME=value` on `claude mcp add`, or use the Keychain items from step 7. The clone steps below are the second route.
 
 ## Set up (from a clone)
 
